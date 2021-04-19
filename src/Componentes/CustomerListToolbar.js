@@ -12,7 +12,9 @@ import Select from '@material-ui/core/Select';
 
 
 const CustomerListToolbar = (props) => {
-  const {findIntems,properyOption,SetSelectedProperyOPtion,restartSearch} = props;
+
+  const {findIntems,properyOption,SetSelectedProperyOPtion,restartSearch,elementSearch,findCustomerCheck} = props;
+
   return (
       <Box {...props}>
       <Box sx={{ mt: 3 }}>
@@ -43,7 +45,14 @@ const CustomerListToolbar = (props) => {
                       </MenuItem>
                       {properyOption.map(option =>{
                         return(
-                          <MenuItem onClick={() => {SetSelectedProperyOPtion(option)}} value={option}>{option}</MenuItem>
+                          <>
+                          {
+                            option.includes("Checked") 
+                              ? <MenuItem onClick={() => {findCustomerCheck(option)}} value={option}>{option}</MenuItem>
+                              : <MenuItem onClick={() => {SetSelectedProperyOPtion(option)}} value={option}>{option}</MenuItem>
+                          }
+                          </>
+
                         );
                       })}
                     </Select>
@@ -52,6 +61,7 @@ const CustomerListToolbar = (props) => {
                   )
                 }}
                 onChange={(e) =>findIntems(e.target.value)}
+                value={elementSearch}
                 placeholder="Search customer"
                 variant="outlined"
               />

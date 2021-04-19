@@ -7,7 +7,8 @@ import { useState } from 'react';
 
 const SetSelectOption = (customers)=>{
   let allOptions = Object.keys(customers[0]);
-  let options = allOptions.filter(x=> x != "id" && x != "avatarUrl")
+  let options = allOptions.filter(x=> x !== "id" && x !== "avatarUrl")
+  options = [...options,"Checked"]
   return options;
 }
 
@@ -15,9 +16,46 @@ function App() {
   const [customers, SetCustomers] = useState(customersMock);
   const [properyOption , SetproperyOption] = useState(SetSelectOption(customersMock));
   const [selectedProperyOPtion,SetSelectedProperyOPtion] = useState("none");
+  const [elementSearch,SetElementSearch]= useState("");
+  const [checkedCustomer,SetChekedCustomer] = useState([]);
+  const [selectedCustomerIds, setSelectedCustomerIds] = useState([]);
 
+  const handleSelectAll = (event) => {
+    let newSelectedCustomerIds;
+    let selectAllCustomer;
+
+    if (event.target.checked) {
+      newSelectedCustomerIds = customers.map((customer) => customer.id);
+      selectAllCustomer = [...customers]
+    } else {
+      newSelectedCustomerIds = [];
+    }
+    SetChekedCustomer([...checkedCustomer,selectAllCustomer]);
+    setSelectedCustomerIds(newSelectedCustomerIds);
+  };
+
+  const handleSelectOne = (customer) => {
+    let id = customer.id;
+    const selectedIndex = selectedCustomerIds.indexOf(id);
+    let newSelectedCustomerIds = [];
+    if (selectedIndex === -1) {
+      newSelectedCustomerIds = newSelectedCustomerIds.concat(selectedCustomerIds, id);
+    } else if (selectedIndex === 0) {
+      newSelectedCustomerIds = newSelectedCustomerIds.concat(selectedCustomerIds.slice(1));
+    } else if (selectedIndex === selectedCustomerIds.length - 1) {
+      newSelectedCustomerIds = newSelectedCustomerIds.concat(selectedCustomerIds.slice(0, -1));
+    } else if (selectedIndex > 0) {
+      newSelectedCustomerIds = newSelectedCustomerIds.concat(
+        selectedCustomerIds.slice(0, selectedIndex),
+        selectedCustomerIds.slice(selectedIndex + 1)
+      );
+    }
+    SetChekedCustomer([...checkedCustomer,customer]);
+    setSelectedCustomerIds(newSelectedCustomerIds);
+  };
 
   const findIntems = (property) => {
+    SetElementSearch(property);
     let arregloNuevo = [];
     let i=0;
     let foundProperty="";
@@ -27,7 +65,6 @@ function App() {
         for (key in customer) {
             if(selectedProperyOPtion === "none")
             {
-
               switch(key){
                 case "address":
                   foundProperty = `${customer[key].city}, ${customer[key].state}, ${customer[key].country}`;
@@ -61,7 +98,6 @@ function App() {
                 else
                   foundProperty = customer[key];
 
-                debugger;
                 let isResult = foundProperty.includes(property);
                 if(isResult)
                   arregloNuevo[i]= customer;
@@ -71,13 +107,19 @@ function App() {
       });
     }
     else{
-      debugger;
       SetCustomers(customersMock)
     }
     SetCustomers(arregloNuevo);
   }
 
-  const restartSearch = () => SetCustomers(customersMock);
+  const restartSearch = () => {
+    SetCustomers(customersMock);
+    SetElementSearch("");
+    SetChekedCustomer([]);
+    setSelectedCustomerIds([]);
+  }
+
+  const findCustomerCheck = () => SetCustomers(checkedCustomer);
 
   return (
     <Box
@@ -88,9 +130,9 @@ function App() {
       }}
     >
       <Container maxWidth={false}>
-        <CustomerListToolbar findIntems={findIntems} properyOption={properyOption} SetSelectedProperyOPtion={SetSelectedProperyOPtion} restartSearch={restartSearch} />
+        <CustomerListToolbar elementSearch={elementSearch} findCustomerCheck={findCustomerCheck} findIntems={findIntems} properyOption={properyOption} SetSelectedProperyOPtion={SetSelectedProperyOPtion} restartSearch={restartSearch} handleSelectAll={handleSelectAll}/>
         <Box sx={{ pt: 3 }}>
-          <CustomerListResults customers={customers} />
+          <CustomerListResults customers={customers} handleSelectOne={handleSelectOne} selectedCustomerIds={selectedCustomerIds} handleSelectAll={handleSelectAll}/>
         </Box>
       </Container>
     </Box>
